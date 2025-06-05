@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -107,7 +106,7 @@ export const ExportPanel = () => {
                     <Checkbox
                       id="groups"
                       checked={includeGroups}
-                      onCheckedChange={setIncludeGroups}
+                      onCheckedChange={(checked) => setIncludeGroups(checked === true)}
                       className="border-gray-600"
                     />
                     <Label htmlFor="groups" className="text-gray-300">
@@ -118,7 +117,7 @@ export const ExportPanel = () => {
                     <Checkbox
                       id="individual"
                       checked={includeIndividual}
-                      onCheckedChange={setIncludeIndividual}
+                      onCheckedChange={(checked) => setIncludeIndividual(checked === true)}
                       className="border-gray-600"
                     />
                     <Label htmlFor="individual" className="text-gray-300">

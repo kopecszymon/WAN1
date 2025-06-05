@@ -1,27 +1,22 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, AlertTriangle, Settings, Check } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface PermissionGateProps {
-  onPermissionGranted: () => void;
+  onRequestPermission: () => Promise<void>;
 }
 
-export const PermissionGate = ({ onPermissionGranted }: PermissionGateProps) => {
+export const PermissionGate = ({ onRequestPermission }: PermissionGateProps) => {
   const [isGranting, setIsGranting] = useState(false);
 
-  const handleRequestPermission = () => {
+  const handleRequestPermission = async () => {
     setIsGranting(true);
-    
-    // Simulate permission request process
-    setTimeout(() => {
-      localStorage.setItem('notificationAccess', 'granted');
-      toast.success('Notification access granted!');
+    try {
+      await onRequestPermission();
+    } finally {
       setIsGranting(false);
-      onPermissionGranted();
-    }, 2000);
+    }
   };
 
   return (

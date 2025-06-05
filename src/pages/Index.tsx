@@ -1,4 +1,4 @@
-
+import { useNotificationListener } from '@/hooks/useNotificationListener';
 import { useState, useEffect } from 'react';
 import { NotificationDashboard } from '@/components/NotificationDashboard';
 import { MessageHistory } from '@/components/MessageHistory';
@@ -9,24 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Shield, Activity, Database, Download } from 'lucide-react';
 
 const Index = () => {
-  const [hasPermissions, setHasPermissions] = useState(false);
-  const [isServiceRunning, setIsServiceRunning] = useState(false);
+  const { 
+    hasPermission, 
+    isListening, 
+    messages, 
+    requestPermission, 
+    startListening 
+  } = useNotificationListener();
 
-  useEffect(() => {
-    // Simulate permission check
-    const checkPermissions = () => {
-      const hasNotificationAccess = localStorage.getItem('notificationAccess') === 'granted';
-      setHasPermissions(hasNotificationAccess);
-      setIsServiceRunning(hasNotificationAccess);
-    };
-
-    checkPermissions();
-    const interval = setInterval(checkPermissions, 5000);
-    return () => clearInterval(interval);
-  }, []);
-
-  if (!hasPermissions) {
-    return <PermissionGate onPermissionGranted={() => setHasPermissions(true)} />;
+  if (!hasPermission) {
+    return <PermissionGate onRequestPermission={requestPermission} />;
   }
 
   return (
@@ -42,7 +34,7 @@ const Index = () => {
           <p className="text-gray-400">Monitor and log WhatsApp notifications in real-time</p>
         </div>
 
-        <ServiceStatus isRunning={isServiceRunning} />
+        <ServiceStatus isRunning={isListening} />
 
         <Tabs defaultValue="dashboard" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 bg-gray-800 border-gray-700">
@@ -65,11 +57,11 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="dashboard">
-            <NotificationDashboard />
+            <NotificationDashboard messages={messages} />
           </TabsContent>
 
           <TabsContent value="history">
-            <MessageHistory />
+            <MessageHistory messages={messages} />
           </TabsContent>
 
           <TabsContent value="export">
