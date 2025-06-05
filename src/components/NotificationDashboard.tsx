@@ -1,10 +1,9 @@
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, User, Clock } from 'lucide-react';
+import { MessageSquare, Users, Clock, TrendingUp } from 'lucide-react';
 
-interface WhatsAppMessage {
+interface Message {
   id: string;
   sender: string;
   content: string;
@@ -12,41 +11,46 @@ interface WhatsAppMessage {
   isGroup: boolean;
 }
 
-export const NotificationDashboard = () => {
-  const [recentMessages, setRecentMessages] = useState<WhatsAppMessage[]>([]);
-  const [stats, setStats] = useState({
-    totalToday: 45,
-    uniqueSenders: 12,
-    groupMessages: 23
-  });
+interface NotificationDashboardProps {
+  messages: Message[];
+}
 
-  useEffect(() => {
-    // Simulate real-time message updates
-    const interval = setInterval(() => {
-      const newMessage: WhatsAppMessage = {
-        id: Date.now().toString(),
-        sender: ['John Doe', 'Sarah Smith', 'Work Group', 'Family Chat', 'Alice Johnson'][Math.floor(Math.random() * 5)],
-        content: [
-          'Hey, how are you?',
-          'Meeting at 3 PM',
-          'Can you check this?',
-          'Thanks for the update',
-          'See you tomorrow',
-          'Great work on the project!'
-        ][Math.floor(Math.random() * 6)],
-        timestamp: Date.now(),
-        isGroup: Math.random() > 0.6
-      };
+export const NotificationDashboard = ({ messages }: NotificationDashboardProps) => {
+  const totalMessages = messages.length;
+  const groupMessages = messages.filter(msg => msg.isGroup).length;
+  const individualMessages = messages.filter(msg => !msg.isGroup).length;
+  
+  const recentMessages = messages.slice(0, 5);
 
-      setRecentMessages(prev => [newMessage, ...prev.slice(0, 9)]);
-      setStats(prev => ({
-        ...prev,
-        totalToday: prev.totalToday + 1
-      }));
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const stats = [
+    {
+      title: 'Total Messages',
+      value: totalMessages,
+      icon: MessageSquare,
+      color: 'text-blue-500'
+    },
+    {
+      title: 'Group Messages',
+      value: groupMessages,
+      icon: Users,
+      color: 'text-green-500'
+    },
+    {
+      title: 'Individual Messages',
+      value: individualMessages,
+      icon: MessageSquare,
+      color: 'text-purple-500'
+    },
+    {
+      title: 'Today',
+      value: messages.filter(msg => {
+        const today = new Date().toDateString();
+        return new Date(msg.timestamp).toDateString() === today;
+      }).length,
+      icon: Clock,
+      color: 'text-orange-500'
+    }
+  ];
 
   const formatTime = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -57,69 +61,47 @@ export const NotificationDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-400">Today's Messages</p>
-                <p className="text-2xl font-bold text-white">{stats.totalToday}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <Card key={stat.title} className="bg-gray-800 border-gray-700">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-400">{stat.title}</p>
+                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+                </div>
+                <stat.icon className={`w-8 h-8 ${stat.color}`} />
               </div>
-              <MessageSquare className="w-8 h-8 text-green-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-400">Unique Senders</p>
-                <p className="text-2xl font-bold text-white">{stats.uniqueSenders}</p>
-              </div>
-              <User className="w-8 h-8 text-blue-400" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gray-800 border-gray-700">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-400">Group Messages</p>
-                <p className="text-2xl font-bold text-white">{stats.groupMessages}</p>
-              </div>
-              <MessageSquare className="w-8 h-8 text-purple-400" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="bg-gray-800 border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Real-time Notifications
+            <TrendingUp className="w-5 h-5" />
+            Recent Activity
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {recentMessages.length === 0 ? (
               <p className="text-gray-400 text-center py-8">
-                Waiting for WhatsApp notifications...
+                No messages received yet. Make sure the service is running and permissions are granted.
               </p>
             ) : (
               recentMessages.map((message) => (
                 <div
                   key={message.id}
-                  className="flex items-start gap-3 p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="flex items-center gap-3 p-3 bg-gray-700 rounded-lg"
                 >
                   <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-medium text-sm">
                     {message.sender.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-white truncate">
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium text-white text-sm">
                         {message.sender}
                       </p>
                       {message.isGroup && (
@@ -127,14 +109,14 @@ export const NotificationDashboard = () => {
                           Group
                         </Badge>
                       )}
-                      <span className="text-xs text-gray-400 ml-auto">
-                        {formatTime(message.timestamp)}
-                      </span>
                     </div>
-                    <p className="text-sm text-gray-300 truncate">
+                    <p className="text-xs text-gray-400 truncate">
                       {message.content}
                     </p>
                   </div>
+                  <span className="text-xs text-gray-500">
+                    {formatTime(message.timestamp)}
+                  </span>
                 </div>
               ))
             )}

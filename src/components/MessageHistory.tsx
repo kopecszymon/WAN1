@@ -15,48 +15,13 @@ interface Message {
   isGroup: boolean;
 }
 
-export const MessageHistory = () => {
+interface MessageHistoryProps {
+  messages: Message[];
+}
+
+export const MessageHistory = ({ messages }: MessageHistoryProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
-  
-  // Mock data for demonstration
-  const messages: Message[] = [
-    {
-      id: '1',
-      sender: 'John Doe',
-      content: 'Hey, how are you doing today?',
-      timestamp: Date.now() - 300000,
-      isGroup: false
-    },
-    {
-      id: '2',
-      sender: 'Work Group',
-      content: 'Meeting scheduled for tomorrow at 10 AM',
-      timestamp: Date.now() - 600000,
-      isGroup: true
-    },
-    {
-      id: '3',
-      sender: 'Sarah Smith',
-      content: 'Can you review the document I sent?',
-      timestamp: Date.now() - 900000,
-      isGroup: false
-    },
-    {
-      id: '4',
-      sender: 'Family Chat',
-      content: 'Dinner at 7 PM tonight',
-      timestamp: Date.now() - 1200000,
-      isGroup: true
-    },
-    {
-      id: '5',
-      sender: 'Alice Johnson',
-      content: 'Thanks for the help yesterday!',
-      timestamp: Date.now() - 1500000,
-      isGroup: false
-    }
-  ];
 
   const filteredMessages = useMemo(() => {
     return messages.filter(message => {
