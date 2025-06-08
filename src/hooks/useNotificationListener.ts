@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import NotificationListener, { WhatsAppMessage } from '@/plugins/NotificationListener';
 import { toast } from 'sonner';
+import { Capacitor } from '@capacitor/core';
 
 export const useNotificationListener = () => {
   const [hasPermission, setHasPermission] = useState(false);
@@ -11,6 +12,12 @@ export const useNotificationListener = () => {
   const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
   useEffect(() => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      console.log('Running in web environment, notification listener not available');
+      return;
+    }
+
     // Check initial permission status
     checkPermission();
 
@@ -43,18 +50,30 @@ export const useNotificationListener = () => {
   }, []);
 
   const checkPermission = async () => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
     try {
       setIsCheckingPermission(true);
       const result = await NotificationListener.checkPermission();
       setHasPermission(result.granted);
     } catch (error) {
       console.error('Error checking notification permission:', error);
+      // Don't show toast error for web platform
     } finally {
       setIsCheckingPermission(false);
     }
   };
 
   const requestPermission = async () => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      toast.error('Notification listener is only available on mobile devices');
+      return;
+    }
+
     try {
       setIsRequestingPermission(true);
       
@@ -63,11 +82,13 @@ export const useNotificationListener = () => {
       if (result.granted) {
         // Permission already granted
         setHasPermission(true);
+        setIsRequestingPermission(false);
         toast.success('Notification access already granted!');
         startListening();
       } else if (result.settingsOpened) {
         // Settings opened successfully, now wait for user to return
         toast.info('Please enable notification access for this app and return here');
+        // Don't set isRequestingPermission to false here, wait for the permission change event
       } else {
         // Failed to open settings
         toast.error(result.error || 'Failed to open notification settings');
@@ -82,6 +103,11 @@ export const useNotificationListener = () => {
   };
 
   const startListening = async () => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
     try {
       await NotificationListener.startListening();
       setIsListening(true);
@@ -93,6 +119,11 @@ export const useNotificationListener = () => {
   };
 
   const stopListening = async () => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
     try {
       await NotificationListener.stopListening();
       setIsListening(false);
@@ -103,6 +134,11 @@ export const useNotificationListener = () => {
   };
 
   const loadMessages = async () => {
+    // Only run on native platforms
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
     try {
       const result = await NotificationListener.getMessages();
       setMessages(result.messages);
