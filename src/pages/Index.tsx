@@ -1,3 +1,4 @@
+
 import { useNotificationListener } from '@/hooks/useNotificationListener';
 import { useState, useEffect } from 'react';
 import { NotificationDashboard } from '@/components/NotificationDashboard';
@@ -13,12 +14,20 @@ const Index = () => {
     hasPermission, 
     isListening, 
     messages, 
+    isCheckingPermission,
     requestPermission, 
+    checkPermission,
     startListening 
   } = useNotificationListener();
 
   if (!hasPermission) {
-    return <PermissionGate onRequestPermission={requestPermission} />;
+    return (
+      <PermissionGate 
+        onRequestPermission={requestPermission} 
+        onCheckPermission={checkPermission}
+        isCheckingPermission={isCheckingPermission}
+      />
+    );
   }
 
   return (
