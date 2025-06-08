@@ -8,6 +8,7 @@ export const useNotificationListener = () => {
   const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
   const [isCheckingPermission, setIsCheckingPermission] = useState(false);
+  const [isRequestingPermission, setIsRequestingPermission] = useState(false);
 
   useEffect(() => {
     // Check initial permission status
@@ -25,12 +26,13 @@ export const useNotificationListener = () => {
       console.log('Permission status changed:', granted);
       setHasPermission(granted);
       setIsCheckingPermission(false);
+      setIsRequestingPermission(false);
       
       if (granted) {
         toast.success('Notification access granted! Starting monitoring...');
         startListening();
       } else {
-        toast.error('Notification access still not granted');
+        toast.info('Please enable notification access for this app in Android settings');
       }
     });
 
@@ -45,32 +47,37 @@ export const useNotificationListener = () => {
       setIsCheckingPermission(true);
       const result = await NotificationListener.checkPermission();
       setHasPermission(result.granted);
-      setIsCheckingPermission(false);
     } catch (error) {
       console.error('Error checking notification permission:', error);
+    } finally {
       setIsCheckingPermission(false);
     }
   };
 
   const requestPermission = async () => {
     try {
-      setIsCheckingPermission(true);
-      toast.info('Opening notification settings...');
+      setIsRequestingPermission(true);
       
       const result = await NotificationListener.requestPermission();
-      setHasPermission(result.granted);
-      setIsCheckingPermission(false);
       
       if (result.granted) {
-        toast.success('Notification access granted!');
+        // Permission already granted
+        setHasPermission(true);
+        toast.success('Notification access already granted!');
         startListening();
+      } else if (result.settingsOpened) {
+        // Settings opened successfully, now wait for user to return
+        toast.info('Please enable notification access for this app and return here');
       } else {
-        toast.error('Notification access denied');
+        // Failed to open settings
+        toast.error(result.error || 'Failed to open notification settings');
+        setIsRequestingPermission(false);
       }
+      
     } catch (error) {
       console.error('Error requesting permission:', error);
-      setIsCheckingPermission(false);
       toast.error('Failed to request notification access');
+      setIsRequestingPermission(false);
     }
   };
 
@@ -109,6 +116,7 @@ export const useNotificationListener = () => {
     isListening,
     messages,
     isCheckingPermission,
+    isRequestingPermission,
     requestPermission,
     checkPermission,
     startListening,

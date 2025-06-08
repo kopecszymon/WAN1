@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Shield, AlertTriangle, Settings, Check, RefreshCw } from 'lucide-react';
@@ -8,17 +7,21 @@ interface PermissionGateProps {
   onRequestPermission: () => Promise<void>;
   onCheckPermission: () => Promise<void>;
   isCheckingPermission: boolean;
+  isRequestingPermission: boolean;
 }
 
-export const PermissionGate = ({ onRequestPermission, onCheckPermission, isCheckingPermission }: PermissionGateProps) => {
-  const [isGranting, setIsGranting] = useState(false);
+export const PermissionGate = ({ 
+  onRequestPermission, 
+  onCheckPermission, 
+  isCheckingPermission,
+  isRequestingPermission 
+}: PermissionGateProps) => {
 
   const handleRequestPermission = async () => {
-    setIsGranting(true);
     try {
       await onRequestPermission();
-    } finally {
-      setIsGranting(false);
+    } catch (error) {
+      console.error('Error requesting permission:', error);
     }
   };
 
@@ -86,16 +89,16 @@ export const PermissionGate = ({ onRequestPermission, onCheckPermission, isCheck
           <div className="space-y-3">
             <Button 
               onClick={handleRequestPermission}
-              disabled={isGranting || isCheckingPermission}
+              disabled={isRequestingPermission || isCheckingPermission}
               className="w-full bg-green-600 hover:bg-green-700 text-white"
             >
               <Settings className="w-4 h-4 mr-2" />
-              {isGranting ? 'Opening Settings...' : 'Grant Notification Access'}
+              {isRequestingPermission ? 'Opening Settings...' : 'Grant Notification Access'}
             </Button>
 
             <Button 
               onClick={handleCheckPermission}
-              disabled={isCheckingPermission}
+              disabled={isCheckingPermission || isRequestingPermission}
               variant="outline"
               className="w-full border-gray-600 text-gray-300 hover:bg-gray-700"
             >
@@ -104,8 +107,16 @@ export const PermissionGate = ({ onRequestPermission, onCheckPermission, isCheck
             </Button>
           </div>
 
+          {isRequestingPermission && (
+            <div className="text-center">
+              <p className="text-sm text-yellow-400">
+                Waiting for you to return from Android settings...
+              </p>
+            </div>
+          )}
+
           <p className="text-xs text-gray-500 text-center">
-            After enabling permission in Android settings, return here and tap "Check Permission Again"
+            After enabling permission in Android settings, the app will automatically detect it when you return
           </p>
         </CardContent>
       </Card>

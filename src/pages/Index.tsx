@@ -15,6 +15,7 @@ const Index = () => {
     isListening, 
     messages, 
     isCheckingPermission,
+    isRequestingPermission,
     requestPermission, 
     checkPermission,
     startListening 
@@ -26,6 +27,7 @@ const Index = () => {
         onRequestPermission={requestPermission} 
         onCheckPermission={checkPermission}
         isCheckingPermission={isCheckingPermission}
+        isRequestingPermission={isRequestingPermission}
       />
     );
   }

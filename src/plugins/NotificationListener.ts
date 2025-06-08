@@ -2,7 +2,7 @@
 import { registerPlugin } from '@capacitor/core';
 
 export interface NotificationListenerPlugin {
-  requestPermission(): Promise<{ granted: boolean }>;
+  requestPermission(): Promise<{ granted: boolean; settingsOpened?: boolean; error?: string }>;
   checkPermission(): Promise<{ granted: boolean }>;
   startListening(): Promise<void>;
   stopListening(): Promise<void>;

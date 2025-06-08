@@ -21,7 +21,6 @@ public class NotificationListenerPlugin extends Plugin {
     private static NotificationListenerPlugin instance;
     private MessageDatabase database;
     private Handler mainHandler;
-    private PluginCall pendingPermissionCall;
 
     @Override
     public void load() {
@@ -40,19 +39,31 @@ public class NotificationListenerPlugin extends Plugin {
         if (hasPermission) {
             JSObject result = new JSObject();
             result.put("granted", true);
+            result.put("settingsOpened", false);
             call.resolve(result);
             return;
         }
         
-        // Store the call to resolve it later when we check permission again
-        pendingPermissionCall = call;
-        
-        // Open notification listener settings
-        Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getContext().startActivity(intent);
-        
-        // Don't resolve immediately - wait for app resume
+        try {
+            // Open notification listener settings
+            Intent intent = new Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
+            
+            // Resolve immediately after opening settings
+            JSObject result = new JSObject();
+            result.put("granted", false);
+            result.put("settingsOpened", true);
+            call.resolve(result);
+            
+        } catch (Exception e) {
+            // If we can't open settings, return an error
+            JSObject result = new JSObject();
+            result.put("granted", false);
+            result.put("settingsOpened", false);
+            result.put("error", "Failed to open notification settings");
+            call.resolve(result);
+        }
     }
 
     @PluginMethod
@@ -117,19 +128,11 @@ public class NotificationListenerPlugin extends Plugin {
     }
 
     public void onAppResumed() {
-        // Check if we have a pending permission request
-        if (pendingPermissionCall != null) {
-            boolean hasPermission = isNotificationListenerEnabled();
-            JSObject result = new JSObject();
-            result.put("granted", hasPermission);
-            pendingPermissionCall.resolve(result);
-            pendingPermissionCall = null;
-            
-            // Notify the frontend about permission status change
-            JSObject data = new JSObject();
-            data.put("granted", hasPermission);
-            notifyListeners("permissionChanged", data);
-        }
+        // Check permission status and notify frontend
+        boolean hasPermission = isNotificationListenerEnabled();
+        JSObject data = new JSObject();
+        data.put("granted", hasPermission);
+        notifyListeners("permissionChanged", data);
     }
 
     public static void notifyMessageReceived(WhatsAppMessage message) {
