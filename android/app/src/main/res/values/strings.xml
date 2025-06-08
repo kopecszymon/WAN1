@@ -1,0 +1,8 @@
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WhatsApp Message Reader</string>
+    <string name="title_activity_main">WhatsApp Message Reader</string>
+    <string name="package_name">app.lovable.abaa76f2df924c0fac903d22aa82157e</string>
+    <string name="custom_url_scheme">app.lovable.abaa76f2df924c0fac903d22aa82157e</string>
+</resources>
